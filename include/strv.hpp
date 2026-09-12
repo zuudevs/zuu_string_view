@@ -85,6 +85,7 @@ public:
 
     constexpr pointer_type data() const noexcept { return data_; }
     constexpr size_type size() const noexcept { return length_; }
+	constexpr bool empty() const noexcept { return length_ == 0; }
 
     operator std::basic_string<CharT>() const { 
         return std::basic_string<CharT>{data_, length_}; 
@@ -132,26 +133,38 @@ public:
         return npos;
     }
 
-    constexpr size_type find(const CharT* str, size_type len, size_type pos) const noexcept {
-        if (!str) return npos;
-        return find_substring(str, len, pos);
+    constexpr size_type find(const CharT* str, size_type pos, size_type count) const noexcept {
+        if (!str) {
+			return npos;
+		}
+        return find_substring(str, count, pos);
     }
 
     constexpr size_type find(const CharT* str, size_type pos = 0) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_substring(str, c_strlen(str), pos);
     }
 
     constexpr size_type find(basic_strv str, size_type pos = 0) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_substring(str.data(), static_cast<size_type>(str.size()), pos);
     }
 
     constexpr size_type find(const std::string& str, size_type pos = 0) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_substring(str.data(), static_cast<size_type>(str.length()), pos);
     }
 
     constexpr size_type rfind(CharT ch, size_type pos = npos) const noexcept {
-        if (length_ == 0) return npos;
+        if (length_ == 0) {
+			return npos;
+		}
         pos = pos < length_ ? pos : length_ - 1;
         
         if (!is_constant_eval_() && sizeof(CharT) == 1) {
@@ -178,22 +191,31 @@ public:
         return npos;
     }
 
-    constexpr size_type rfind(const CharT* str, size_type len, size_type pos) const noexcept {
-        if (!str) return npos;
-        return rfind_substring(str, len, pos);
+    constexpr size_type rfind(const CharT* str, size_type pos, size_type count) const noexcept {
+        if (!str) {
+			return npos;
+		}
+        return rfind_substring(str, count, pos);
     }
 
     constexpr size_type rfind(const CharT* str, size_type pos = npos) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return rfind_substring(str, c_strlen(str), pos);
     }
 
     constexpr size_type rfind(basic_strv str, size_type pos = npos) const noexcept {
-        if (!str) return npos;
-        return rfind_substring(str, str.size(), pos);
+        if (str.empty()) {
+			return npos;
+		}
+        return rfind_substring(str.data(), str.size(), pos);
     }
     
     constexpr size_type rfind(const std::string& str, size_type pos = npos) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return rfind_substring(str.data(), static_cast<size_type>(str.length()), pos);
     }
 
@@ -202,12 +224,16 @@ public:
     }
 
     constexpr size_type find_first_of(const CharT* str, size_type len, size_type pos) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_first_of_impl(str, len, pos);
     }
 
     constexpr size_type find_first_of(const CharT* str, size_type pos = 0) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_first_of_impl(str, c_strlen(str), pos);
     }
     
@@ -224,20 +250,30 @@ public:
     }
 
     constexpr size_type find_last_of(const CharT* str, size_type len, size_type pos) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_last_of_impl(str, len, pos);
     }
 
     constexpr size_type find_last_of(const CharT* str, size_type pos = npos) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_last_of_impl(str, c_strlen(str), pos);
     }
     
     constexpr size_type find_last_of(basic_strv str, size_type pos = npos) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_last_of_impl(str.data(), str.size(), pos);
     }
 
     constexpr size_type find_last_of(const std::string& str, size_type pos = npos) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_last_of_impl(str.data(), static_cast<size_type>(str.length()), pos);
     }
 
@@ -246,20 +282,30 @@ public:
     }
 
     constexpr size_type find_first_not_of(const CharT* str, size_type len, size_type pos) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_first_not_of_impl(str, len, pos);
     }
 
     constexpr size_type find_first_not_of(const CharT* str, size_type pos = 0) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_first_not_of_impl(str, c_strlen(str), pos);
     }
     
     constexpr size_type find_first_not_of(basic_strv str, size_type pos = 0) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_first_not_of_impl(str.data(), str.size(), pos);
     }
     
     constexpr size_type find_first_not_of(const std::string& str, size_type pos = 0) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_first_not_of_impl(str.data(), static_cast<size_type>(str.length()), pos);
     }
 
@@ -268,20 +314,30 @@ public:
     }
 
     constexpr size_type find_last_not_of(const CharT* str, size_type len, size_type pos) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_last_not_of_impl(str, len, pos);
     }
 
     constexpr size_type find_last_not_of(const CharT* str, size_type pos = npos) const noexcept {
-        if (!str) return npos;
+        if (!str) {
+			return npos;
+		}
         return find_last_not_of_impl(str, c_strlen(str), pos);
     }
     
     constexpr size_type find_last_not_of(basic_strv str, size_type pos = npos) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_last_not_of_impl(str.data(), str.size(), pos);
     }
     
     constexpr size_type find_last_not_of(const std::string& str, size_type pos = npos) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_last_not_of_impl(str.data(), static_cast<size_type>(str.length()), pos);
     }
 
@@ -294,21 +350,44 @@ public:
 
 #if (__cplusplus >= 201703L)
     constexpr size_type find(std::string_view str, size_type pos = 0) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_substring(str.data(), static_cast<size_type>(str.size()), pos);
     }
+	
     constexpr size_type rfind(std::string_view str, size_type pos = npos) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return rfind_substring(str.data(), static_cast<size_type>(str.size()), pos);
     }
+
     constexpr size_type find_first_of(std::string_view str, size_type pos = 0) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_first_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
+
     constexpr size_type find_last_of(std::string_view str, size_type pos = npos) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_last_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
+
     constexpr size_type find_first_not_of(std::string_view str, size_type pos = 0) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_first_not_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
+
     constexpr size_type find_last_not_of(std::string_view str, size_type pos = npos) const noexcept {
+		if (str.empty()) {
+			return npos;
+		}
         return find_last_not_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
 #endif
@@ -431,11 +510,19 @@ private:
     }
 
     constexpr size_type rfind_substring(const CharT* str, size_type str_len, size_type pos) const noexcept {
-        if (str_len == 0) return pos <= length_ ? pos : length_;
-        if (str_len > length_) return npos;
+        if (str_len == 0) {
+			return pos <= length_ ? pos : length_;
+		}
+
+        if (str_len > length_) {
+			return npos;
+		}
+        
         pos = pos < length_ - str_len ? pos : length_ - str_len;
         
-        if (str_len == 1) return rfind(str[0], pos);
+        if (str_len == 1) {
+			return rfind(str[0], pos);
+		}
         
         if (!is_constant_eval_() && sizeof(CharT) == 1) {
             CharT first_ch = str[0];
@@ -452,22 +539,29 @@ private:
                 while (match != 0) {
                     unsigned shift = 63 - count_leading_zeros(match);
                     uint64_t bit_mask = 1ULL << shift;
-                    
                     size_type candidate_pos = (ptr - data_) + (shift >> 3);
                     
-                    bool matched = true;
-                    for (size_type i = 1; i < str_len; ++i) {
-                        if (data_[candidate_pos + i] != str[i]) {
-                            matched = false;
-                            break;
+                    if (candidate_pos <= pos) {
+                        bool matched = true;
+                        for (size_type i = 1; i < str_len; ++i) {
+                            if (data_[candidate_pos + i] != str[i]) {
+                                matched = false;
+                                break;
+                            }
+                        }
+
+                        if (matched) {
+                            return candidate_pos;
                         }
                     }
-                    if (matched) {
-						return candidate_pos;
-					}
                     
                     match &= ~bit_mask;
                 }
+                
+                if (pos < tape_size) {
+                    break;
+                }
+
                 pos -= tape_size;
             }
         }
@@ -480,8 +574,12 @@ private:
                     break;
                 }
             }
-            if (matched) return i - 1;
+
+            if (matched) {
+				return i - 1;
+			}
         }
+        
         return npos;
     }
 
