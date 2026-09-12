@@ -807,7 +807,7 @@ private:
         uint64_t block{};
         std::memcpy(&block, ptr, tape_size);
 
-        if (str_len <= 8) {
+        if (str_len <= tape_size) {
           uint64_t match = 0;
           for (size_type i = 0; i < str_len; ++i) {
             uint64_t xored = block ^ tapes[i];
