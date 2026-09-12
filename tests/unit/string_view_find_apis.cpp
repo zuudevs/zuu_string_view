@@ -169,3 +169,46 @@ TEST(find_apis, find_last_not_of) {
   EXPECT_EQ(last_ll_tx_zuu, 10);
   EXPECT_EQ(last_ll_tx_std, 10);
 }
+
+TEST(find_apis, empty_needle_matches_standard_semantics) {
+  const zuu::string_view view{"Hello World"};
+  const zuu::string_view empty_view{""};
+  const std::string empty_string;
+
+  EXPECT_EQ(view.find(empty_view), 0u);
+  EXPECT_EQ(view.find(empty_view, view.size()), view.size());
+  EXPECT_EQ(view.find(empty_view, view.size() + 1), zuu::string_view::npos);
+  EXPECT_EQ(view.find(empty_string, 4), 4u);
+
+  EXPECT_EQ(view.rfind(empty_view), view.size());
+  EXPECT_EQ(view.rfind(empty_view, 4), 4u);
+  EXPECT_EQ(view.rfind(empty_string, view.size() + 1), view.size());
+}
+
+TEST(find_apis, empty_set_not_of_matches_standard_semantics) {
+  const zuu::string_view view{"Hello World"};
+  const zuu::string_view empty_view{""};
+  const std::string empty_string;
+
+  EXPECT_EQ(view.find_first_not_of(empty_view), 0u);
+  EXPECT_EQ(view.find_first_not_of(empty_string, 4), 4u);
+  EXPECT_EQ(view.find_first_not_of(empty_view, view.size()),
+            zuu::string_view::npos);
+
+  EXPECT_EQ(view.find_last_not_of(empty_view), view.size() - 1);
+  EXPECT_EQ(view.find_last_not_of(empty_string, 4), 4u);
+  EXPECT_EQ(zuu::string_view{}.find_last_not_of(empty_view),
+            zuu::string_view::npos);
+}
+
+#if (__cplusplus >= 201703L)
+TEST(find_apis, empty_std_string_view_matches_standard_semantics) {
+  const zuu::string_view view{"Hello World"};
+  const std::string_view empty;
+
+  EXPECT_EQ(view.find(empty, 3), 3u);
+  EXPECT_EQ(view.rfind(empty), view.size());
+  EXPECT_EQ(view.find_first_not_of(empty, 3), 3u);
+  EXPECT_EQ(view.find_last_not_of(empty, 3), 3u);
+}
+#endif
