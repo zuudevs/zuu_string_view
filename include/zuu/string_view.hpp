@@ -77,7 +77,7 @@ public:
         std::memcpy(&block, ptr, tape_size);
 
         uint64_t xored = block ^ pattern;
-        uint64_t match = ((xored - lsb64) & ~xored & msb64);
+        uint64_t match = zero_byte_mask(xored);
 
         if (match != 0) {
           unsigned shift = count_trailing_zeros(match) >> 3;
@@ -136,11 +136,14 @@ public:
         std::memcpy(&block, ptr, tape_size);
 
         uint64_t xored = block ^ pattern;
-        uint64_t match = ((xored - lsb64) & ~xored & msb64);
+        uint64_t match = zero_byte_mask(xored);
 
         if (match != 0) {
           unsigned shift = 63 - count_leading_zeros(match);
           return (ptr - data_) + (shift >> 3);
+        }
+        if (pos < tape_size) {
+          break;
         }
         pos -= tape_size;
       }
@@ -381,7 +384,7 @@ public:
 
 private:
   using tape_type = uint64_t;
-  static constexpr tape_type lsb64 = 0x0101010101010101ULL;
+  static constexpr tape_type low7_mask = 0x7F7F7F7F7F7F7F7FULL;
   static constexpr tape_type msb64 = 0x8080808080808080ULL;
   static constexpr uint8_t tape_size = sizeof(tape_type);
 
@@ -416,6 +419,10 @@ private:
 #else
     return 0;
 #endif
+  }
+
+  static constexpr tape_type zero_byte_mask(tape_type value) noexcept {
+    return ~(((value & low7_mask) + low7_mask) | value | low7_mask) & msb64;
   }
 
   static constexpr size_type c_strlen(const CharT *str) noexcept {
@@ -457,7 +464,7 @@ private:
         std::memcpy(&block, ptr, tape_size);
 
         uint64_t xored = block ^ pattern_first;
-        uint64_t match = ((xored - lsb64) & ~xored & msb64);
+        uint64_t match = zero_byte_mask(xored);
 
         while (match != 0) {
           unsigned shift = count_trailing_zeros(match) >> 3;
@@ -525,7 +532,7 @@ private:
         std::memcpy(&block, ptr, tape_size);
 
         uint64_t xored = block ^ pattern_first;
-        uint64_t match = ((xored - lsb64) & ~xored & msb64);
+        uint64_t match = zero_byte_mask(xored);
 
         while (match != 0) {
           unsigned shift = 63 - count_leading_zeros(match);
@@ -598,7 +605,7 @@ private:
           uint64_t match = 0;
           for (size_type i = 0; i < str_len; ++i) {
             uint64_t xored = block ^ tapes[i];
-            match |= ((xored - lsb64) & ~xored & msb64);
+            match |= zero_byte_mask(xored);
           }
           if (match != 0) {
             unsigned shift = count_trailing_zeros(match) >> 3;
@@ -656,7 +663,7 @@ private:
           uint64_t match = 0;
           for (size_type i = 0; i < str_len; ++i) {
             uint64_t xored = block ^ tapes[i];
-            match |= ((xored - lsb64) & ~xored & msb64);
+            match |= zero_byte_mask(xored);
           }
           uint64_t not_match = ~match & msb64;
           if (not_match != 0) {
@@ -715,7 +722,7 @@ private:
           uint64_t match = 0;
           for (size_type i = 0; i < str_len; ++i) {
             uint64_t xored = block ^ tapes[i];
-            match |= ((xored - lsb64) & ~xored & msb64);
+            match |= zero_byte_mask(xored);
           }
           if (match != 0) {
             unsigned shift = 63 - count_leading_zeros(match);
@@ -733,6 +740,9 @@ private:
               return (ptr - data_) + i - 1;
             }
           }
+        }
+        if (pos < tape_size) {
+          break;
         }
         pos -= tape_size;
       }
@@ -774,7 +784,7 @@ private:
           uint64_t match = 0;
           for (size_type i = 0; i < str_len; ++i) {
             uint64_t xored = block ^ tapes[i];
-            match |= ((xored - lsb64) & ~xored & msb64);
+            match |= zero_byte_mask(xored);
           }
           uint64_t not_match = ~match & msb64;
           if (not_match != 0) {
@@ -793,6 +803,9 @@ private:
               return (ptr - data_) + i - 1;
             }
           }
+        }
+        if (pos < tape_size) {
+          break;
         }
         pos -= tape_size;
       }
