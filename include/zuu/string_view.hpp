@@ -1,7 +1,8 @@
-#ifndef STRV_HPP
-#define STRV_HPP
+#ifndef ZUU_STRING_VIEW_HPP
+#define ZUU_STRING_VIEW_HPP
 
-#include <cstdint>
+#include <zuu/char_class.hpp>
+// #include <cstdint>
 #include <cstring>
 #include <ostream>
 #include <string>
@@ -9,78 +10,40 @@
 
 #if (__cplusplus >= 201703L)
     #include <string_view>
-
-	#define INLINE_VAR inline
 #elif (__cplusplus >= 202002L)
     #include <string_view>
     #include <bit>
-#else
-	#define INLINE_VAR
 #endif
 
 namespace zuu {
-namespace strv_impl {
-namespace meta {
-
-template <typename T>
-struct is_char_type : std::false_type {};
-
-template <>
-struct is_char_type<char> : std::true_type {};
-
-template <>
-struct is_char_type<wchar_t> : std::true_type {};
-
-#if defined(__cpp_char8_t) || __cplusplus >= 202002L
-template <> struct is_char_type<char8_t> : std::true_type {};
-#endif
-
-template <>
-struct is_char_type<char16_t> : std::true_type {};
-
-template <>
-struct is_char_type<char32_t> : std::true_type {};
-
-template <>
-struct is_char_type<unsigned char> : std::true_type {};
-
-template <>
-struct is_char_type<signed char> : std::true_type {};
-
-template <typename T>
-INLINE_VAR constexpr bool is_char_type_v = is_char_type<T>::value;
-
-} // namespace meta
-} // namespace strv_impl
-
 template <typename CharT,
     typename = std::enable_if_t<
-        strv_impl::meta::is_char_type_v<CharT>>>
-struct basic_strv {
+        zuu::meta::is_char_type_v<CharT>>>
+struct basic_string_view {
 public:
     using char_type = CharT;
-    using size_type = uint32_t;
+    using size_type = unsigned int;
     using pointer_type = const char_type*;
     static constexpr size_type npos = ~size_type{};
 
-    constexpr basic_strv() noexcept = default;
-    constexpr basic_strv(const basic_strv&) noexcept = default;
-    constexpr basic_strv& operator=(const basic_strv&) noexcept = default;
-    constexpr basic_strv(basic_strv&&) noexcept = default;
-    constexpr basic_strv& operator=(basic_strv&&) noexcept = default;
-    ~basic_strv() = default;
+    constexpr basic_string_view() noexcept = default;
+    constexpr basic_string_view(const basic_string_view&) noexcept = default;
+    constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
+    constexpr basic_string_view(basic_string_view&&) noexcept = default;
+    constexpr basic_string_view& operator=(basic_string_view&&) noexcept = default;
+    ~basic_string_view() = default;
 
 	template <size_t N>
-	constexpr basic_strv(const CharT (&arr)[N]) noexcept
+	constexpr basic_string_view(const CharT (&arr)[N]) noexcept
 	 : data_(arr), length_(N - 1) {}
 
-    constexpr basic_strv(pointer_type data, size_type length) noexcept
+    constexpr basic_string_view(pointer_type data, size_type length) noexcept
      : data_(data), length_(length) {}
 
-    constexpr basic_strv(pointer_type begin, pointer_type end) noexcept
+    constexpr basic_string_view(pointer_type begin, pointer_type end) noexcept
      : data_(begin), length_(static_cast<size_type>(end - begin)) {}
 
-	constexpr basic_strv(const std::string& str) noexcept
+	constexpr basic_string_view(const std::string& str) noexcept
 	 : data_(str.data()), length_(static_cast<size_type>(str.length())) {}
 
     constexpr pointer_type data() const noexcept { return data_; }
@@ -147,7 +110,7 @@ public:
         return find_substring(str, c_strlen(str), pos);
     }
 
-    constexpr size_type find(basic_strv str, size_type pos = 0) const noexcept {
+    constexpr size_type find(basic_string_view str, size_type pos = 0) const noexcept {
 		if (str.empty()) {
 			return npos;
 		}
@@ -205,7 +168,7 @@ public:
         return rfind_substring(str, c_strlen(str), pos);
     }
 
-    constexpr size_type rfind(basic_strv str, size_type pos = npos) const noexcept {
+    constexpr size_type rfind(basic_string_view str, size_type pos = npos) const noexcept {
         if (str.empty()) {
 			return npos;
 		}
@@ -237,7 +200,7 @@ public:
         return find_first_of_impl(str, c_strlen(str), pos);
     }
     
-    constexpr size_type find_first_of(basic_strv str, size_type pos = 0) const noexcept {
+    constexpr size_type find_first_of(basic_string_view str, size_type pos = 0) const noexcept {
         return find_first_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
     
@@ -263,7 +226,7 @@ public:
         return find_last_of_impl(str, c_strlen(str), pos);
     }
     
-    constexpr size_type find_last_of(basic_strv str, size_type pos = npos) const noexcept {
+    constexpr size_type find_last_of(basic_string_view str, size_type pos = npos) const noexcept {
 		if (str.empty()) {
 			return npos;
 		}
@@ -295,7 +258,7 @@ public:
         return find_first_not_of_impl(str, c_strlen(str), pos);
     }
     
-    constexpr size_type find_first_not_of(basic_strv str, size_type pos = 0) const noexcept {
+    constexpr size_type find_first_not_of(basic_string_view str, size_type pos = 0) const noexcept {
 		if (str.empty()) {
 			return npos;
 		}
@@ -327,7 +290,7 @@ public:
         return find_last_not_of_impl(str, c_strlen(str), pos);
     }
     
-    constexpr size_type find_last_not_of(basic_strv str, size_type pos = npos) const noexcept {
+    constexpr size_type find_last_not_of(basic_string_view str, size_type pos = npos) const noexcept {
 		if (str.empty()) {
 			return npos;
 		}
@@ -341,9 +304,9 @@ public:
         return find_last_not_of_impl(str.data(), static_cast<size_type>(str.length()), pos);
     }
 
-    constexpr basic_strv substr(size_type pos, size_type count) const noexcept {
+    constexpr basic_string_view substr(size_type pos, size_type count) const noexcept {
         if (pos > length_) {
-            return basic_strv(data_ + length_, size_type{});
+            return basic_string_view(data_ + length_, size_type{});
         }
         
         size_type rcount = count;
@@ -351,7 +314,7 @@ public:
             rcount = length_ - pos;
         }
         
-        return basic_strv(data_ + pos, rcount);
+        return basic_string_view(data_ + pos, rcount);
     }
 
 #if (__cplusplus >= 201703L)
@@ -398,7 +361,7 @@ public:
     }
 #endif
 
-	friend std::ostream& operator<<(std::ostream& out, const basic_strv& data) {
+	friend std::ostream& operator<<(std::ostream& out, const basic_string_view& data) {
         if (data.data_ && data.length_ > 0) {
             out.write(data.data_, static_cast<std::streamsize>(data.length_));
         }
@@ -687,7 +650,10 @@ private:
         for (size_type i = (ptr - data_); i < length_; ++i) {
             bool found = false;
             for (size_type j = 0; j < str_len; ++j) {
-                if (data_[i] == str[j]) { found = true; break; }
+                if (data_[i] == str[j]) { 
+					found = true; 
+					break; 
+				}
             }
             if (!found) return i;
         }
@@ -744,8 +710,14 @@ private:
     }
 
     constexpr size_type find_last_not_of_impl(const CharT* str, size_type str_len, size_type pos) const noexcept {
-        if (length_ == 0) return npos;
-        if (str_len == 0) return pos < length_ ? pos : length_ - 1;
+        if (length_ == 0) {
+			return npos;
+		}
+
+        if (str_len == 0) {
+			return pos < length_ ? pos : length_ - 1;
+		}
+
         pos = pos < length_ ? pos : length_ - 1;
 
         if (!is_constant_eval_() && sizeof(CharT) == 1) {
@@ -766,7 +738,6 @@ private:
                     }
                     uint64_t not_match = ~match & msb64;
                     if (not_match != 0) {
-                        // BUG FIXED: Menggunakan not_match alih-alih match
                         unsigned shift = 63 - count_leading_zeros(not_match);
                         return (ptr - data_) + (shift >> 3);
                     }
@@ -800,20 +771,21 @@ private:
 
 #if (__cplusplus >= 201703L)
 template <typename CharT>
-basic_strv(const CharT*, uint32_t) -> basic_strv<CharT>;
+basic_string_view(const CharT*, uint32_t) -> basic_string_view<CharT>;
 
 template <typename CharT>
-basic_strv(const CharT*, const CharT*) -> basic_strv<CharT>;
+basic_string_view(const CharT*, const CharT*) -> basic_string_view<CharT>;
 #endif
 
-using strv = basic_strv<char>;
-using wstrv = basic_strv<wchar_t>;
+using string_view = basic_string_view<char>;
+using wstring_view = basic_string_view<wchar_t>;
+
 #if defined(__cpp_char8_t) || (__cplusplus >= 202002L)
-using u8strv = basic_strv<char8_t>;
+using u8string_view = basic_string_view<char8_t>;
 #endif
-using u16strv = basic_strv<char16_t>;
-using u32strv = basic_strv<char32_t>;
 
+using u16string_view = basic_string_view<char16_t>;
+using u32string_view = basic_string_view<char32_t>;
 } // namespace zuu
 
-#endif // STRV_HPP
+#endif // ZUU_STRING_VIEW_HPP
