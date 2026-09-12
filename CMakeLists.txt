@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(
 	zuu_strv
-	DESCRIPTION "`string_view` is a lightweight, non-owning reference object that stores only a pointer to the start of the data and the character length, without copying or allocating new memory. It is used to enhance performance through a zero-copy approach, enabling efficient reading, searching, or processing of various text sources in high-performance applications."
+	DESCRIPTION "A lightweight, non-owning `string_view` implementation bringing C++17 `string_view` features to C++11 with zero-copy efficiency."
 	VERSION 0.1.0
 	LANGUAGES CXX C
 )
@@ -16,6 +16,7 @@ include(cmake/modules/output.cmake)
 include(cmake/modules/warning.cmake)
 include(cmake/modules/sanitizing.cmake)
 include(cmake/modules/optimizing.cmake)
+include(cmake/modules/testing.cmake)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(${CMAKE_SOURCE_DIR}/tests)

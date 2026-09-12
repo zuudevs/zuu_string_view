@@ -1,7 +1,7 @@
 {
     "name": "zuu-strv",
     "version": "0.1.0",
-    "description": "`string_view` is a lightweight, non-owning reference object that stores only a pointer to the start of the data and the character length, without copying or allocating new memory. It is used to enhance performance through a zero-copy approach, enabling efficient reading, searching, or processing of various text sources in high-performance applications.",
+    "description": "A lightweight, non-owning* `string_view` implementation bringing C++17 `string_view` features to C++11 with zero-copy efficiency.",
     "dependencies": [
 		"benchmark",
 		"gtest"
