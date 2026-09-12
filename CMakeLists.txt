@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(
-	zuu_strv
+	zuu_string_view
 	DESCRIPTION "A lightweight, non-owning `string_view` implementation bringing C++17 `string_view` features to C++11 with zero-copy efficiency."
-	VERSION 0.3.0
+	VERSION 0.4.0
 	LANGUAGES CXX C
 )
 
@@ -17,6 +17,7 @@ include(cmake/modules/warning.cmake)
 include(cmake/modules/sanitizing.cmake)
 include(cmake/modules/optimizing.cmake)
 include(cmake/modules/testing.cmake)
+include(cmake/modules/benchmarking.cmake)
 include(cmake/tools/clang-tidy.cmake)
 include(cmake/tools/clang-format.cmake)
 

@@ -1,6 +1,6 @@
 {
-    "name": "zuu-strv",
-    "version": "0.3.0",
+    "name": "zuu-string-view",
+    "version": "0.4.0",
     "description": "A lightweight, non-owning `string_view` implementation bringing C++17 `string_view` features to C++11 with zero-copy efficiency.",
     "dependencies": [
 		"benchmark",
