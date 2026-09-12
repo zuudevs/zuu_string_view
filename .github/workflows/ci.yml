@@ -1,32 +1,66 @@
-name: C++ CI Build
+name: C++ CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
-  build:
-    name: Build & Test (${{ matrix.os }} - ${{ matrix.build_type }})
+  build-and-test:
+    name: ${{ matrix.compiler }} / ${{ matrix.os }} / ${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        build_type: [Release, Debug]
+        build_type: [Debug, Release]
+        include:
+          - os: ubuntu-24.04
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+
+          - os: ubuntu-24.04
+            compiler: clang
+            cc: clang
+            cxx: clang++
+
+          - os: windows-2022
+            compiler: msvc
+            cc: ""
+            cxx: ""
+
+          - os: macos-15
+            compiler: apple-clang
+            cc: clang
+            cxx: clang++
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Configure CMake
-      shell: bash
-      run: |
-        cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      - name: Configure CMake
+        if: runner.os != 'Windows'
+        run: >-
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_C_COMPILER=${{ matrix.cc }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          -DCMAKE_CXX_STANDARD=17
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
+          -DCMAKE_CXX_EXTENSIONS=OFF
 
-    - name: Build Project
-      shell: bash
-      run: |
-        cmake --build build --config ${{ matrix.build_type }}
+      - name: Configure CMake (MSVC)
+        if: runner.os == 'Windows'
+        run: >-
+          cmake -S . -B build
+          -DCMAKE_CXX_STANDARD=17
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
+          -DCMAKE_CXX_EXTENSIONS=OFF
+
+      - name: Build Project
+        run: cmake --build build --config ${{ matrix.build_type }} --parallel
+
+      - name: Run Tests
+        run: ctest --test-dir build --build-config ${{ matrix.build_type }} --output-on-failure
