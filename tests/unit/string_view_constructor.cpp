@@ -1,6 +1,14 @@
 #include "string_view_samples.hpp"
 #include <utility>
 
+TEST(ctor_test, default_ctor) {
+  constexpr zuu::string_view view{};
+
+  EXPECT_EQ(view.data(), nullptr);
+  EXPECT_EQ(view.size(), 0u);
+  EXPECT_TRUE(view.empty());
+}
+
 TEST(ctor_test, raw_pointer) {
   zuu::string_view str1(str);
   std::string str2(str);
