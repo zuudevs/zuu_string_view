@@ -1,6 +1,7 @@
 add_test_target(test_strv
 	${CMAKE_CURRENT_SOURCE_DIR}/unit/strv_constructor.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/unit/strv_assignment_op.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/strv_find_apis.cpp
 )
 
 add_custom_target(unit_tests)

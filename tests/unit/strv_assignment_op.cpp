@@ -1,5 +1,5 @@
 #include "strv_samples.hpp"
-#include <algorithm>
+#include <utility>
 
 TEST(assignment_operator, raw_pointer) {
 	strv str1;
