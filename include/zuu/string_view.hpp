@@ -142,6 +142,9 @@ public:
           unsigned shift = 63 - count_leading_zeros(match);
           return (ptr - data_) + (shift >> 3);
         }
+        if (pos < tape_size) {
+          break;
+        }
         pos -= tape_size;
       }
     }
@@ -734,6 +737,9 @@ private:
             }
           }
         }
+        if (pos < tape_size) {
+          break;
+        }
         pos -= tape_size;
       }
     }
@@ -793,6 +799,9 @@ private:
               return (ptr - data_) + i - 1;
             }
           }
+        }
+        if (pos < tape_size) {
+          break;
         }
         pos -= tape_size;
       }
