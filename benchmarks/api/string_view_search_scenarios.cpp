@@ -33,6 +33,13 @@ const char* scenario_name(match_position scenario) {
   return "unknown";
 }
 
+template <bool Reverse>
+bool scans_entire_haystack(match_position scenario) {
+  return scenario == match_position::miss ||
+         (Reverse ? scenario == match_position::begin
+                  : scenario == match_position::end);
+}
+
 std::string make_char_haystack(std::size_t size, match_position scenario) {
   std::string haystack(size, 'a');
   if (scenario == match_position::begin) {
@@ -78,8 +85,10 @@ void benchmark_character_search(benchmark::State& state) {
       benchmark::DoNotOptimize(view.find(kCharNeedle));
     }
   }
-  state.SetBytesProcessed(
-      static_cast<int64_t>(state.iterations() * haystack.size()));
+  if (scans_entire_haystack<Reverse>(scenario)) {
+    state.SetBytesProcessed(
+        static_cast<int64_t>(state.iterations() * haystack.size()));
+  }
 }
 
 template <typename View, bool Reverse>
@@ -103,8 +112,10 @@ void benchmark_string_search(benchmark::State& state) {
       benchmark::DoNotOptimize(view.find(needle));
     }
   }
-  state.SetBytesProcessed(
-      static_cast<int64_t>(state.iterations() * haystack.size()));
+  if (scans_entire_haystack<Reverse>(scenario)) {
+    state.SetBytesProcessed(
+        static_cast<int64_t>(state.iterations() * haystack.size()));
+  }
 }
 
 static void BM_Zuu_FindChar_Scenarios(benchmark::State& state) {
