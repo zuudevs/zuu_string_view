@@ -142,6 +142,10 @@ public:
         return find_substring(str, c_strlen(str), pos);
     }
 
+    constexpr size_type find(basic_strv str, size_type pos = 0) const noexcept {
+        return find_substring(str.data(), static_cast<size_type>(str.size()), pos);
+    }
+
     constexpr size_type find(const std::string& str, size_type pos = 0) const noexcept {
         return find_substring(str.data(), static_cast<size_type>(str.length()), pos);
     }
@@ -183,6 +187,11 @@ public:
         if (!str) return npos;
         return rfind_substring(str, c_strlen(str), pos);
     }
+
+    constexpr size_type rfind(basic_strv str, size_type pos = npos) const noexcept {
+        if (!str) return npos;
+        return rfind_substring(str, str.size(), pos);
+    }
     
     constexpr size_type rfind(const std::string& str, size_type pos = npos) const noexcept {
         return rfind_substring(str.data(), static_cast<size_type>(str.length()), pos);
@@ -200,6 +209,10 @@ public:
     constexpr size_type find_first_of(const CharT* str, size_type pos = 0) const noexcept {
         if (!str) return npos;
         return find_first_of_impl(str, c_strlen(str), pos);
+    }
+    
+    constexpr size_type find_first_of(basic_strv str, size_type pos = 0) const noexcept {
+        return find_first_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
     
     constexpr size_type find_first_of(const std::string& str, size_type pos = 0) const noexcept {
@@ -220,6 +233,10 @@ public:
         return find_last_of_impl(str, c_strlen(str), pos);
     }
     
+    constexpr size_type find_last_of(basic_strv str, size_type pos = npos) const noexcept {
+        return find_last_of_impl(str.data(), str.size(), pos);
+    }
+
     constexpr size_type find_last_of(const std::string& str, size_type pos = npos) const noexcept {
         return find_last_of_impl(str.data(), static_cast<size_type>(str.length()), pos);
     }
@@ -238,6 +255,10 @@ public:
         return find_first_not_of_impl(str, c_strlen(str), pos);
     }
     
+    constexpr size_type find_first_not_of(basic_strv str, size_type pos = 0) const noexcept {
+        return find_first_not_of_impl(str.data(), str.size(), pos);
+    }
+    
     constexpr size_type find_first_not_of(const std::string& str, size_type pos = 0) const noexcept {
         return find_first_not_of_impl(str.data(), static_cast<size_type>(str.length()), pos);
     }
@@ -254,6 +275,10 @@ public:
     constexpr size_type find_last_not_of(const CharT* str, size_type pos = npos) const noexcept {
         if (!str) return npos;
         return find_last_not_of_impl(str, c_strlen(str), pos);
+    }
+    
+    constexpr size_type find_last_not_of(basic_strv str, size_type pos = npos) const noexcept {
+        return find_last_not_of_impl(str.data(), str.size(), pos);
     }
     
     constexpr size_type find_last_not_of(const std::string& str, size_type pos = npos) const noexcept {
