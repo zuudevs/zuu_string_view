@@ -132,7 +132,7 @@ public:
         return npos;
     }
 
-    constexpr size_type find(const CharT* str, size_type len, size_type pos = 0) const noexcept {
+    constexpr size_type find(const CharT* str, size_type len, size_type pos) const noexcept {
         if (!str) return npos;
         return find_substring(str, len, pos);
     }
@@ -178,7 +178,7 @@ public:
         return npos;
     }
 
-    constexpr size_type rfind(const CharT* str, size_type len, size_type pos = npos) const noexcept {
+    constexpr size_type rfind(const CharT* str, size_type len, size_type pos) const noexcept {
         if (!str) return npos;
         return rfind_substring(str, len, pos);
     }
