@@ -5,6 +5,11 @@ function(add_benchmark_target name)
 	target_link_libraries(${name} 
 		PRIVATE 
 			benchmark::benchmark_main
-			${PROJECT_NAME}::internal
+	)
+	target_include_directories(${name}
+		PUBLIC
+			${CMAKE_SOURCE_DIR}/include
+		PRIVATE
+			${CMAKE_SOURCE_DIR}/src
 	)
 endfunction()
