@@ -1,7 +1,7 @@
 #include "strv_samples.hpp"
 
 TEST(find_apis, find) {
-    strv str_view = str;
+    zuu::strv str_view = str;
 
     // find first of 'l' character in "Hello World"
     auto first_l_ch = str_view.find('l');
@@ -15,7 +15,7 @@ TEST(find_apis, find) {
     // find first of "ll" text in "Hello World"
     auto first_ll_tx_raw = str_view.find("ll");
     auto first_ll_tx_raw_with_hint = str_view.find("ll", 0, 2);
-    auto first_ll_tx_zuu = str_view.find(strv{"ll"});
+    auto first_ll_tx_zuu = str_view.find(zuu::strv{"ll"});
     auto first_ll_tx_std = str_view.find(std::string{"ll"});
 
     EXPECT_EQ(first_l_ch, 2);
@@ -29,7 +29,7 @@ TEST(find_apis, find) {
 }
 
 TEST(find_apis, rfind) {
-    strv str_view = str;
+    zuu::strv str_view = str;
 
     // find last occurrence of 'l' character in "Hello World" (backward)
     auto last_l_ch = str_view.rfind('l');
@@ -43,7 +43,7 @@ TEST(find_apis, rfind) {
     // find last occurrence of "ll" text in "Hello World" (backward)
     auto last_ll_tx_raw = str_view.rfind("ll");
     auto last_ll_tx_raw_with_hint = str_view.rfind("ll", 11, 2);
-    auto last_ll_tx_zuu = str_view.rfind(strv{"ll"});
+    auto last_ll_tx_zuu = str_view.rfind(zuu::strv{"ll"});
     auto last_ll_tx_std = str_view.rfind(std::string{"ll"});
 
     EXPECT_EQ(last_l_ch, 9);
@@ -57,7 +57,7 @@ TEST(find_apis, rfind) {
 }
 
 TEST(find_apis, find_first_of) {
-    strv str_view = str;
+    zuu::strv str_view = str;
 
     // find first occurrence of any character 'l' in "Hello World"
     auto first_l_ch = str_view.find_first_of('l');
@@ -71,7 +71,7 @@ TEST(find_apis, find_first_of) {
     // find first occurrence of any character from "ll" text in "Hello World"
     auto first_ll_tx_raw = str_view.find_first_of("ll");
     auto first_ll_tx_raw_with_hint = str_view.find_first_of("ll", 0, 2);
-    auto first_ll_tx_zuu = str_view.find_first_of(strv{"ll"});
+    auto first_ll_tx_zuu = str_view.find_first_of(zuu::strv{"ll"});
     auto first_ll_tx_std = str_view.find_first_of(std::string{"ll"});
 
     EXPECT_EQ(first_l_ch, 2);
@@ -85,7 +85,7 @@ TEST(find_apis, find_first_of) {
 }
 
 TEST(find_apis, find_last_of) {
-    strv str_view = str;
+    zuu::strv str_view = str;
 
     // find last occurrence of any character 'l' searching backwards in "Hello World"
     auto last_l_ch = str_view.find_last_of('l');
@@ -99,7 +99,7 @@ TEST(find_apis, find_last_of) {
     // find last occurrence of any character from "ll" searching backwards
     auto last_ll_tx_raw = str_view.find_last_of("ll");
     auto last_ll_tx_raw_with_hint = str_view.find_last_of("ll", 11, 2);
-    auto last_ll_tx_zuu = str_view.find_last_of(strv{"ll"});
+    auto last_ll_tx_zuu = str_view.find_last_of(zuu::strv{"ll"});
     auto last_ll_tx_std = str_view.find_last_of(std::string{"ll"});
 
     EXPECT_EQ(last_l_ch, 9);
@@ -113,7 +113,7 @@ TEST(find_apis, find_last_of) {
 }
 
 TEST(find_apis, find_first_not_of) {
-    strv str_view = str;
+    zuu::strv str_view = str;
 
     // find first character that is NOT 'l' in "Hello World"
     auto first_not_l_ch = str_view.find_first_not_of('l');
@@ -127,7 +127,7 @@ TEST(find_apis, find_first_not_of) {
     // find first character that is NOT part of "ll" in "Hello World"
     auto first_not_ll_tx_raw = str_view.find_first_not_of("ll");
     auto first_not_ll_tx_raw_with_hint = str_view.find_first_not_of("ll", 0, 2);
-    auto first_not_ll_tx_zuu = str_view.find_first_not_of(strv{"ll"});
+    auto first_not_ll_tx_zuu = str_view.find_first_not_of(zuu::strv{"ll"});
     auto first_not_ll_tx_std = str_view.find_first_not_of(std::string{"ll"});
 
     EXPECT_EQ(first_not_l_ch, 0);
@@ -141,7 +141,7 @@ TEST(find_apis, find_first_not_of) {
 }
 
 TEST(find_apis, find_last_not_of) {
-    strv str_view = str;
+    zuu::strv str_view = str;
 
     // find last character that is NOT 'l' searching backwards in "Hello World"
     auto last_l_ch = str_view.find_last_not_of('l');
@@ -155,7 +155,7 @@ TEST(find_apis, find_last_not_of) {
     // find last character that is NOT part of "ll" searching backwards
     auto last_ll_tx_raw = str_view.find_last_not_of("ll");
     auto last_ll_tx_raw_with_hint = str_view.find_last_not_of("ll", 11, 2);
-    auto last_ll_tx_zuu = str_view.find_last_not_of(strv{"ll"});
+    auto last_ll_tx_zuu = str_view.find_last_not_of(zuu::strv{"ll"});
     auto last_ll_tx_std = str_view.find_last_not_of(std::string{"ll"});
 
     EXPECT_EQ(last_l_ch, 10);

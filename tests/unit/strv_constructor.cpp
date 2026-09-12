@@ -2,7 +2,7 @@
 #include <utility>
 
 TEST(ctor_test, raw_pointer) {
-	strv str1(str);  
+	zuu::strv str1(str);  
 	std::string str2(str);
 
 	EXPECT_STREQ(str1.data(), str);
@@ -12,7 +12,7 @@ TEST(ctor_test, raw_pointer) {
 }
 
 TEST(ctor_test, raw_pointer_with_len) {
-	strv str1(str, str_len);
+	zuu::strv str1(str, str_len);
 	std::string str2(str, str_len);
 
 	EXPECT_STREQ(str1.data(), str);
@@ -22,7 +22,7 @@ TEST(ctor_test, raw_pointer_with_len) {
 }
 
 TEST(ctor_test, paired_raw_pointer) {
-	strv str1(str, str + str_len);
+	zuu::strv str1(str, str + str_len);
 	std::string str2(str, str + str_len);
 
 	EXPECT_STREQ(str1.data(), str);
@@ -32,7 +32,7 @@ TEST(ctor_test, paired_raw_pointer) {
 }
 
 TEST(ctor_test, std_string) {
-	strv str1(str_std);
+	zuu::strv str1(str_std);
 	std::string str2(str_std);
 
 	EXPECT_STREQ(str1.data(), str);
@@ -42,7 +42,7 @@ TEST(ctor_test, std_string) {
 }
 
 TEST(ctor_test, copy_ctor) {
-	strv str1(str_zuu);
+	zuu::strv str1(str_zuu);
 	std::string str2(str_zuu);
 
 	EXPECT_STREQ(str1.data(), str);
@@ -55,10 +55,10 @@ TEST(ctor_test, move_ctor) {
 	auto str_zuu_target = str_zuu;
 	auto str_std_target = str_std;
 
-	strv str1(std::move(str_zuu_target));
+	zuu::strv str1(std::move(str_zuu_target));
 	std::string str2(std::move(str_zuu_target));
 
-	strv str3(std::move(str_std_target));
+	zuu::strv str3(std::move(str_std_target));
 	std::string str4(std::move(str_std_target));
 
 	EXPECT_STREQ(str1.data(), str);

@@ -2,7 +2,7 @@
 #include <utility>
 
 TEST(assignment_operator, raw_pointer) {
-	strv str1;
+	zuu::strv str1;
 	std::string str2;
 
 	str1 = str;
@@ -15,7 +15,7 @@ TEST(assignment_operator, raw_pointer) {
 }
 
 TEST(assignment_operator, std_string) {
-	strv str1;
+	zuu::strv str1;
 	std::string str2;
 
 	str1 = str_std;
@@ -28,7 +28,7 @@ TEST(assignment_operator, std_string) {
 }
 
 TEST(assignment_operator, copy_assigment) {
-	strv str1;
+	zuu::strv str1;
 	std::string str2;
 
 	str1 = str_zuu;
@@ -44,7 +44,7 @@ TEST(assignment_operator, move_assigment) {
 	auto str_zuu_target = str_zuu;
 	auto str_std_target = str_std;
 	
-	strv str1, str3;
+	zuu::strv str1, str3;
 	std::string str2, str4;
 
 	str1 = std::move(str_zuu_target);
