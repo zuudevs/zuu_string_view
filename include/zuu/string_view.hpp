@@ -113,17 +113,11 @@ public:
 
   constexpr size_type find(basic_string_view str,
                            size_type pos = 0) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_substring(str.data(), static_cast<size_type>(str.size()), pos);
   }
 
   constexpr size_type find(const std::string &str,
                            size_type pos = 0) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_substring(str.data(), static_cast<size_type>(str.length()),
                           pos);
   }
@@ -177,17 +171,11 @@ public:
 
   constexpr size_type rfind(basic_string_view str,
                             size_type pos = npos) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return rfind_substring(str.data(), str.size(), pos);
   }
 
   constexpr size_type rfind(const std::string &str,
                             size_type pos = npos) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return rfind_substring(str.data(), static_cast<size_type>(str.length()),
                            pos);
   }
@@ -286,17 +274,11 @@ public:
 
   constexpr size_type find_first_not_of(basic_string_view str,
                                         size_type pos = 0) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_first_not_of_impl(str.data(), str.size(), pos);
   }
 
   constexpr size_type find_first_not_of(const std::string &str,
                                         size_type pos = 0) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_first_not_of_impl(str.data(),
                                   static_cast<size_type>(str.length()), pos);
   }
@@ -324,17 +306,11 @@ public:
 
   constexpr size_type find_last_not_of(basic_string_view str,
                                        size_type pos = npos) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_last_not_of_impl(str.data(), str.size(), pos);
   }
 
   constexpr size_type find_last_not_of(const std::string &str,
                                        size_type pos = npos) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_last_not_of_impl(str.data(),
                                  static_cast<size_type>(str.length()), pos);
   }
@@ -356,17 +332,11 @@ public:
 #if (__cplusplus >= 201703L)
   constexpr size_type find(std::string_view str,
                            size_type pos = 0) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_substring(str.data(), static_cast<size_type>(str.size()), pos);
   }
 
   constexpr size_type rfind(std::string_view str,
                             size_type pos = npos) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return rfind_substring(str.data(), static_cast<size_type>(str.size()), pos);
   }
 
@@ -390,18 +360,12 @@ public:
 
   constexpr size_type find_first_not_of(std::string_view str,
                                         size_type pos = 0) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_first_not_of_impl(str.data(),
                                   static_cast<size_type>(str.size()), pos);
   }
 
   constexpr size_type find_last_not_of(std::string_view str,
                                        size_type pos = npos) const noexcept {
-    if (str.empty()) {
-      return npos;
-    }
     return find_last_not_of_impl(str.data(), static_cast<size_type>(str.size()),
                                  pos);
   }
