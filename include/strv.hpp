@@ -223,11 +223,11 @@ public:
         return find(ch, pos);
     }
 
-    constexpr size_type find_first_of(const CharT* str, size_type len, size_type pos) const noexcept {
+    constexpr size_type find_first_of(const CharT* str, size_type pos, size_type count) const noexcept {
         if (!str) {
 			return npos;
 		}
-        return find_first_of_impl(str, len, pos);
+        return find_first_of_impl(str, pos, count);
     }
 
     constexpr size_type find_first_of(const CharT* str, size_type pos = 0) const noexcept {
@@ -249,11 +249,11 @@ public:
         return rfind(ch, pos);
     }
 
-    constexpr size_type find_last_of(const CharT* str, size_type len, size_type pos) const noexcept {
+    constexpr size_type find_last_of(const CharT* str, size_type pos, size_type count) const noexcept {
         if (!str) {
 			return npos;
 		}
-        return find_last_of_impl(str, len, pos);
+        return find_last_of_impl(str, pos, count);
     }
 
     constexpr size_type find_last_of(const CharT* str, size_type pos = npos) const noexcept {
@@ -281,11 +281,11 @@ public:
         return find_first_not_of_impl(&ch, 1, pos);
     }
 
-    constexpr size_type find_first_not_of(const CharT* str, size_type len, size_type pos) const noexcept {
+    constexpr size_type find_first_not_of(const CharT* str, size_type pos, size_type count) const noexcept {
         if (!str) {
 			return npos;
 		}
-        return find_first_not_of_impl(str, len, pos);
+        return find_first_not_of_impl(str, pos, count);
     }
 
     constexpr size_type find_first_not_of(const CharT* str, size_type pos = 0) const noexcept {
@@ -313,11 +313,11 @@ public:
         return find_last_not_of_impl(&ch, 1, pos);
     }
 
-    constexpr size_type find_last_not_of(const CharT* str, size_type len, size_type pos) const noexcept {
+    constexpr size_type find_last_not_of(const CharT* str, size_type pos, size_type count) const noexcept {
         if (!str) {
 			return npos;
 		}
-        return find_last_not_of_impl(str, len, pos);
+        return find_last_not_of_impl(str, pos, count);
     }
 
     constexpr size_type find_last_not_of(const CharT* str, size_type pos = npos) const noexcept {
