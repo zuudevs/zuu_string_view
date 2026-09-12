@@ -24,7 +24,7 @@ public:
   using pointer_type = const char_type *;
   static constexpr size_type npos = ~size_type{};
 
-  constexpr basic_string_view() noexcept = default;
+  constexpr basic_string_view() noexcept : data_(nullptr), length_(0) {}
   constexpr basic_string_view(const basic_string_view &) noexcept = default;
   constexpr basic_string_view &
   operator=(const basic_string_view &) noexcept = default;
@@ -616,7 +616,6 @@ private:
       return npos;
     if (str_len == 1)
       return find(str[0], pos);
-
     auto ptr = data_ + pos;
 
     if (!is_constant_eval_() && sizeof(CharT) == 1 &&
