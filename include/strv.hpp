@@ -341,11 +341,17 @@ public:
         return find_last_not_of_impl(str.data(), static_cast<size_type>(str.length()), pos);
     }
 
-    constexpr basic_strv substr(size_type pos, size_type length) const noexcept {
-        if (length > length_) {
-            return basic_strv(data_ + pos, data_ + length_);
+    constexpr basic_strv substr(size_type pos, size_type count) const noexcept {
+        if (pos > length_) {
+            return basic_strv(data_ + length_, size_type{});
         }
-        return basic_strv(data_ + pos, data_ + length);
+        
+        size_type rcount = count;
+        if (count == npos || pos + count > length_) {
+            rcount = length_ - pos;
+        }
+        
+        return basic_strv(data_ + pos, rcount);
     }
 
 #if (__cplusplus >= 201703L)
