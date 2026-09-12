@@ -285,7 +285,7 @@ public:
         if (!str) {
 			return npos;
 		}
-        return find_first_not_of_impl(str, pos, count);
+        return find_first_not_of_impl(str, count, pos);
     }
 
     constexpr size_type find_first_not_of(const CharT* str, size_type pos = 0) const noexcept {
@@ -317,7 +317,7 @@ public:
         if (!str) {
 			return npos;
 		}
-        return find_last_not_of_impl(str, pos, count);
+        return find_last_not_of_impl(str, count, pos);
     }
 
     constexpr size_type find_last_not_of(const CharT* str, size_type pos = npos) const noexcept {
