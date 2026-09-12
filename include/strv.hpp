@@ -97,44 +97,36 @@ public:
 #endif
 
     constexpr size_type find(CharT ch, size_type pos = 0) const noexcept {
-        if (pos >= length_) {
-            return npos;
-        }
+		if (pos >= length_) {
+			return npos;
+		}
 
         auto ptr = data_ + pos;
         auto remaining = length_ - pos;
 
-        if (remaining < tape_size) {
-            for (size_type i = 0; i < remaining; ++i) {
-                if (ptr[i] == ch) {
-                    return pos + i;
+		if (!is_constant_eval_() && sizeof(CharT) == 1 && remaining >= tape_size) {
+            uint64_t pattern = make_tape(ch);
+            const CharT* const swar_end = data_ + length_ - tape_size;
+            
+            while (ptr <= swar_end) {
+                uint64_t block{};
+                std::memcpy(&block, ptr, tape_size);
+
+                uint64_t xored = block ^ pattern;
+                uint64_t match = ((xored - lsb64) & ~xored & msb64);
+
+                if (match != 0) {
+                    unsigned shift = count_trailing_zeros(match) >> 3;
+                    return (ptr - data_) + shift;
                 }
+                ptr += tape_size;
             }
-            return npos;
-        }
-
-        uint64_t pattern = make_tape(ch);
-        const CharT* const end_ptr = data_ + length_ - tape_size;
-        
-        while (ptr <= end_ptr) {
-            uint64_t block{};
-            std::memcpy(&block, ptr, tape_size);
-
-            uint64_t xored = block ^ pattern;
-            uint64_t match = ((xored - lsb64) & ~xored & msb64);
-
-            if (match != 0) {
-                unsigned shift = __builtin_ctzll(match) >> 3;
-                return (ptr - data_) + shift;
-            }
-
-            ptr += tape_size;
         }
 
         for (size_type i = (ptr - data_); i < length_; ++i) {
             if (data_[i] == ch) {
-                return i;
-            }
+				return i;
+			}
         }
 
         return npos;
@@ -158,26 +150,22 @@ public:
         if (length_ == 0) return npos;
         pos = pos < length_ ? pos : length_ - 1;
         
-        uint64_t pattern = make_tape(ch);
-        
-        while (pos >= tape_size - 1) {
-            const CharT* ptr = data_ + pos - (tape_size - 1);
-            uint64_t block{};
-            std::memcpy(&block, ptr, tape_size);
-            
-            uint64_t xored = block ^ pattern;
-            uint64_t match = ((xored - lsb64) & ~xored & msb64);
-            
-            if (match != 0) {
-#if (__cplusplus >= 202002L)
-				unsigned shift = 63 - std::countr_zero(match);
-#else
-				unsigned shift = 63 - __builtin_clzll(match);
-#endif
-                return (ptr - data_) + (shift >> 3);
+        if (!is_constant_eval_() && sizeof(CharT) == 1) {
+            uint64_t pattern = make_tape(ch);
+            while (pos >= tape_size - 1) {
+                const CharT* ptr = data_ + pos - (tape_size - 1);
+                uint64_t block{};
+                std::memcpy(&block, ptr, tape_size);
+                
+                uint64_t xored = block ^ pattern;
+                uint64_t match = ((xored - lsb64) & ~xored & msb64);
+                
+                if (match != 0) {
+                    unsigned shift = 63 - count_leading_zeros(match);
+                    return (ptr - data_) + (shift >> 3);
+                }
+                pos -= tape_size;
             }
-            if (pos < tape_size) break; 
-            pos -= tape_size;
         }
         
         for (size_type i = pos + 1; i > 0; --i) {
@@ -272,27 +260,29 @@ public:
         return find_last_not_of_impl(str.data(), static_cast<size_type>(str.length()), pos);
     }
 
+    constexpr basic_strv substr(size_type pos, size_type length) const noexcept {
+        if (length > length_) {
+            return basic_strv(data_ + pos, data_ + length_);
+        }
+        return basic_strv(data_ + pos, data_ + length);
+    }
+
 #if (__cplusplus >= 201703L)
     constexpr size_type find(std::string_view str, size_type pos = 0) const noexcept {
         return find_substring(str.data(), static_cast<size_type>(str.size()), pos);
     }
-
     constexpr size_type rfind(std::string_view str, size_type pos = npos) const noexcept {
         return rfind_substring(str.data(), static_cast<size_type>(str.size()), pos);
     }
-
     constexpr size_type find_first_of(std::string_view str, size_type pos = 0) const noexcept {
         return find_first_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
-
     constexpr size_type find_last_of(std::string_view str, size_type pos = npos) const noexcept {
         return find_last_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
-
     constexpr size_type find_first_not_of(std::string_view str, size_type pos = 0) const noexcept {
         return find_first_not_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
-
     constexpr size_type find_last_not_of(std::string_view str, size_type pos = npos) const noexcept {
         return find_last_not_of_impl(str.data(), static_cast<size_type>(str.size()), pos);
     }
@@ -314,6 +304,36 @@ private:
     pointer_type data_;
     size_type length_;
 
+    static constexpr bool is_constant_eval_() noexcept {
+#if (__cplusplus >= 202002L)
+        return std::is_constant_evaluated();
+#elif defined(__GNUC__) || defined(__clang__)
+        return __builtin_is_constant_evaluated();
+#else
+        return false;
+#endif
+    }
+
+    static constexpr unsigned count_trailing_zeros(uint64_t x) noexcept {
+#if (__cplusplus >= 202002L)
+        return std::countr_zero(x);
+#elif defined(__GNUC__) || defined(__clang__)
+        return __builtin_ctzll(x);
+#else
+        return 0;
+#endif
+    }
+
+    static constexpr unsigned count_leading_zeros(uint64_t x) noexcept {
+#if (__cplusplus >= 202002L)
+        return std::countl_zero(x);
+#elif defined(__GNUC__) || defined(__clang__)
+        return __builtin_clzll(x);
+#else
+        return 0; 
+#endif
+    }
+
     static constexpr size_type c_strlen(const CharT* str) noexcept {
         size_type len = 0;
         while (str[len] != CharT{}) ++len;
@@ -329,61 +349,49 @@ private:
     }
 
     constexpr size_type find_substring(const CharT* str, size_type str_len, size_type pos) const noexcept {
-        if (str_len == 0) {
-            return pos <= length_ ? pos : npos;
-        }
-
-        if (pos >= length_ || str_len > length_ - pos) {
-            return npos;
-        }
-
-        if (str_len == 1) {
-            return find(str[0], pos);
-        }
+        if (str_len == 0) return pos <= length_ ? pos : npos;
+        if (pos >= length_ || str_len > length_ - pos) return npos;
+        if (str_len == 1) return find(str[0], pos);
 
         CharT first_ch = str[0];
         CharT last_ch = str[str_len - 1];
-        
         auto ptr = data_ + pos;
-        const CharT* const end_ptr = data_ + length_ - str_len;
 
-        tape_type pattern_first = make_tape(first_ch);
+        if (!is_constant_eval_() && sizeof(CharT) == 1 && length_ - pos >= tape_size) {
+            tape_type pattern_first = make_tape(first_ch);
+            
+            const CharT* const swar_end = data_ + length_ - tape_size; 
+            
+            while (ptr <= swar_end) {
+                uint64_t block{};
+                std::memcpy(&block, ptr, tape_size);
 
-        while (ptr <= end_ptr) {
-            uint64_t block{};
-            std::memcpy(&block, ptr, tape_size);
+                uint64_t xored = block ^ pattern_first;
+                uint64_t match = ((xored - lsb64) & ~xored & msb64);
 
-            uint64_t xored = block ^ pattern_first;
-            uint64_t match = ((xored - lsb64) & ~xored & msb64);
+                while (match != 0) {
+                    unsigned shift = count_trailing_zeros(match) >> 3;
+                    const CharT* candidate_ptr = ptr + shift;
 
-            while (match != 0) {
-                unsigned shift = __builtin_ctzll(match) >> 3;
-                const CharT* candidate_ptr = ptr + shift;
+                    if (candidate_ptr > data_ + length_ - str_len) break;
 
-                if (candidate_ptr > end_ptr + (str_len - 1)) {
-                    break;
-                }
-
-                if (candidate_ptr[str_len - 1] == last_ch) {
-                    bool matched = true;
-                    for (size_type i = 1; i < str_len - 1; ++i) {
-                        if (candidate_ptr[i] != str[i]) {
-                            matched = false;
-                            break;
+                    if (candidate_ptr[str_len - 1] == last_ch) {
+                        bool matched = true;
+                        for (size_type i = 1; i < str_len - 1; ++i) {
+                            if (candidate_ptr[i] != str[i]) {
+                                matched = false;
+                                break;
+                            }
                         }
+                        if (matched) return static_cast<size_type>(candidate_ptr - data_);
                     }
-                    if (matched) {
-                        return static_cast<size_type>(candidate_ptr - data_);
-                    }
+                    match &= match - 1;
                 }
-
-                match &= match - 1;
+                ptr += tape_size;
             }
-
-            ptr += tape_size;
         }
 
-        for (size_type i = static_cast<size_type>((ptr - tape_size + 1) - data_); i <= length_ - str_len; ++i) {
+        for (size_type i = static_cast<size_type>(ptr - data_); i <= length_ - str_len; ++i) {
             bool matched = true;
             for (size_type j = 0; j < str_len; ++j) {
                 if (data_[i + j] != str[j]) {
@@ -391,9 +399,7 @@ private:
                     break;
                 }
             }
-            if (matched) {
-                return i;
-            }
+            if (matched) return i;
         }
 
         return npos;
@@ -406,40 +412,39 @@ private:
         
         if (str_len == 1) return rfind(str[0], pos);
         
-        CharT first_ch = str[0];
-        tape_type pattern_first = make_tape(first_ch);
-        
-        while (pos >= tape_size - 1) {
-            const CharT* ptr = data_ + pos - (tape_size - 1);
-            uint64_t block{};
-            std::memcpy(&block, ptr, tape_size);
+        if (!is_constant_eval_() && sizeof(CharT) == 1) {
+            CharT first_ch = str[0];
+            tape_type pattern_first = make_tape(first_ch);
             
-            uint64_t xored = block ^ pattern_first;
-            uint64_t match = ((xored - lsb64) & ~xored & msb64);
-            
-            while (match != 0) {
-#if (__cplusplus >= 202002L)
-				unsigned shift = 63 - std::countr_zero(match);
-#else
-				unsigned shift = 63 - __builtin_clzll(match);
-#endif
-                uint64_t bit_mask = 1ULL << shift;
+            while (pos >= tape_size - 1) {
+                const CharT* ptr = data_ + pos - (tape_size - 1);
+                uint64_t block{};
+                std::memcpy(&block, ptr, tape_size);
                 
-                size_type candidate_pos = (ptr - data_) + (shift >> 3);
+                uint64_t xored = block ^ pattern_first;
+                uint64_t match = ((xored - lsb64) & ~xored & msb64);
                 
-                bool matched = true;
-                for (size_type i = 1; i < str_len; ++i) {
-                    if (data_[candidate_pos + i] != str[i]) {
-                        matched = false;
-                        break;
+                while (match != 0) {
+                    unsigned shift = 63 - count_leading_zeros(match);
+                    uint64_t bit_mask = 1ULL << shift;
+                    
+                    size_type candidate_pos = (ptr - data_) + (shift >> 3);
+                    
+                    bool matched = true;
+                    for (size_type i = 1; i < str_len; ++i) {
+                        if (data_[candidate_pos + i] != str[i]) {
+                            matched = false;
+                            break;
+                        }
                     }
+                    if (matched) {
+						return candidate_pos;
+					}
+                    
+                    match &= ~bit_mask;
                 }
-                if (matched) return candidate_pos;
-                
-                match &= ~bit_mask;
+                pos -= tape_size;
             }
-            if (pos < tape_size) break;
-            pos -= tape_size;
         }
         
         for (size_type i = pos + 1; i > 0; --i) {
@@ -460,40 +465,42 @@ private:
         if (str_len == 1) return find(str[0], pos);
 
         auto ptr = data_ + pos;
-        const CharT* const end_ptr = data_ + length_ - tape_size;
 
-        tape_type tapes[tape_size]{};
-        size_type tape_count = str_len < tape_size ? str_len : tape_size; 
-        for(size_type i=0; i<tape_count; ++i) tapes[i] = make_tape(str[i]);
+        if (!is_constant_eval_() && sizeof(CharT) == 1 && length_ - pos >= tape_size) {
+            const CharT* const swar_end = data_ + length_ - tape_size;
+            tape_type tapes[tape_size]{};
+            size_type tape_count = str_len < tape_size ? str_len : tape_size; 
+            for(size_type i=0; i<tape_count; ++i) tapes[i] = make_tape(str[i]);
 
-        while (ptr <= end_ptr) {
-            uint64_t block{};
-            std::memcpy(&block, ptr, tape_size);
+            while (ptr <= swar_end) {
+                uint64_t block{};
+                std::memcpy(&block, ptr, tape_size);
 
-            if (str_len <= 8) {
-                uint64_t match = 0;
-                for(size_type i = 0; i < str_len; ++i) {
-                    uint64_t xored = block ^ tapes[i];
-                    match |= ((xored - lsb64) & ~xored & msb64);
-                }
-                if (match != 0) {
-                    unsigned shift = __builtin_ctzll(match) >> 3;
-                    return (ptr - data_) + shift;
-                }
-            } else {
-                uint64_t lookup[4] = {0};
-                for(size_type i=0; i<str_len; ++i) {
-                    uint8_t c = static_cast<uint8_t>(str[i]);
-                    lookup[c >> 6] |= (1ULL << (c & 63));
-                }
-                for(size_type i=0; i<tape_size; ++i) {
-                    uint8_t c = static_cast<uint8_t>(ptr[i]);
-                    if (lookup[c >> 6] & (1ULL << (c & 63))) {
-                        return (ptr - data_) + i;
+                if (str_len <= 8) {
+                    uint64_t match = 0;
+                    for(size_type i = 0; i < str_len; ++i) {
+                        uint64_t xored = block ^ tapes[i];
+                        match |= ((xored - lsb64) & ~xored & msb64);
+                    }
+                    if (match != 0) {
+                        unsigned shift = count_trailing_zeros(match) >> 3;
+                        return (ptr - data_) + shift;
+                    }
+                } else {
+                    uint64_t lookup[4] = {0};
+                    for(size_type i=0; i<str_len; ++i) {
+                        uint8_t c = static_cast<uint8_t>(str[i]);
+                        lookup[c >> 6] |= (1ULL << (c & 63));
+                    }
+                    for(size_type i=0; i<tape_size; ++i) {
+                        uint8_t c = static_cast<uint8_t>(ptr[i]);
+                        if (lookup[c >> 6] & (1ULL << (c & 63))) {
+                            return (ptr - data_) + i;
+                        }
                     }
                 }
+                ptr += tape_size;
             }
-            ptr += tape_size;
         }
 
         for (size_type i = (ptr - data_); i < length_; ++i) {
@@ -509,42 +516,43 @@ private:
         if (str_len == 0) return pos;
 
         auto ptr = data_ + pos;
-        const CharT* const end_ptr = data_ + length_ - tape_size;
 
-        tape_type tapes[tape_size]{};
-        size_type tape_count = str_len < tape_size ? str_len : tape_size; 
-        for(size_type i=0; i<tape_count; ++i) tapes[i] = make_tape(str[i]);
+        if (!is_constant_eval_() && sizeof(CharT) == 1 && length_ - pos >= tape_size) {
+            const CharT* const swar_end = data_ + length_ - tape_size;
+            tape_type tapes[tape_size]{};
+            size_type tape_count = str_len < tape_size ? str_len : tape_size; 
+            for(size_type i=0; i<tape_count; ++i) tapes[i] = make_tape(str[i]);
 
-        while (ptr <= end_ptr) {
-            uint64_t block{};
-            std::memcpy(&block, ptr, tape_size);
+            while (ptr <= swar_end) {
+                uint64_t block{};
+                std::memcpy(&block, ptr, tape_size);
 
-            if (str_len <= 8) {
-                uint64_t match = 0;
-                for(size_type i = 0; i < str_len; ++i) {
-                    uint64_t xored = block ^ tapes[i];
-                    match |= ((xored - lsb64) & ~xored & msb64);
-                }
-                // Membalikan bitmask (inverting) untuk menemukan index yang BUKAN merupakan anggota.
-                uint64_t not_match = ~match & msb64;
-                if (not_match != 0) {
-                    unsigned shift = __builtin_ctzll(not_match) >> 3;
-                    return (ptr - data_) + shift;
-                }
-            } else {
-                uint64_t lookup[4] = {0};
-                for(size_type i=0; i<str_len; ++i) {
-                    uint8_t c = static_cast<uint8_t>(str[i]);
-                    lookup[c >> 6] |= (1ULL << (c & 63));
-                }
-                for(size_type i=0; i<tape_size; ++i) {
-                    uint8_t c = static_cast<uint8_t>(ptr[i]);
-                    if (!(lookup[c >> 6] & (1ULL << (c & 63)))) {
-                        return (ptr - data_) + i;
+                if (str_len <= 8) {
+                    uint64_t match = 0;
+                    for(size_type i = 0; i < str_len; ++i) {
+                        uint64_t xored = block ^ tapes[i];
+                        match |= ((xored - lsb64) & ~xored & msb64);
+                    }
+                    uint64_t not_match = ~match & msb64;
+                    if (not_match != 0) {
+                        unsigned shift = count_trailing_zeros(not_match) >> 3;
+                        return (ptr - data_) + shift;
+                    }
+                } else {
+                    uint64_t lookup[4] = {0};
+                    for(size_type i=0; i<str_len; ++i) {
+                        uint8_t c = static_cast<uint8_t>(str[i]);
+                        lookup[c >> 6] |= (1ULL << (c & 63));
+                    }
+                    for(size_type i=0; i<tape_size; ++i) {
+                        uint8_t c = static_cast<uint8_t>(ptr[i]);
+                        if (!(lookup[c >> 6] & (1ULL << (c & 63)))) {
+                            return (ptr - data_) + i;
+                        }
                     }
                 }
+                ptr += tape_size;
             }
-            ptr += tape_size;
         }
 
         for (size_type i = (ptr - data_); i < length_; ++i) {
@@ -561,44 +569,41 @@ private:
         if (length_ == 0 || str_len == 0) return npos;
         pos = pos < length_ ? pos : length_ - 1;
 
-        tape_type tapes[tape_size]{};
-        size_type tape_count = str_len < tape_size ? str_len : tape_size; 
-        for(size_type i=0; i<tape_count; ++i) tapes[i] = make_tape(str[i]);
+        if (!is_constant_eval_() && sizeof(CharT) == 1) {
+            tape_type tapes[tape_size]{};
+            size_type tape_count = str_len < tape_size ? str_len : tape_size; 
+            for(size_type i=0; i<tape_count; ++i) tapes[i] = make_tape(str[i]);
 
-        while (pos >= tape_size - 1) {
-            const CharT* ptr = data_ + pos - (tape_size - 1);
-            uint64_t block{};
-            std::memcpy(&block, ptr, tape_size);
-            
-            if (str_len <= 8) {
-                uint64_t match = 0;
-                for(size_type i = 0; i < str_len; ++i) {
-                    uint64_t xored = block ^ tapes[i];
-                    match |= ((xored - lsb64) & ~xored & msb64);
-                }
-                if (match != 0) {
-#if (__cplusplus >= 202002L)
-				unsigned shift = 63 - std::countr_zero(match);
-#else
-				unsigned shift = 63 - __builtin_clzll(match);
-#endif
-                    return (ptr - data_) + (shift >> 3);
-                }
-            } else {
-                uint64_t lookup[4] = {0};
-                for(size_type i=0; i<str_len; ++i) {
-                    uint8_t c = static_cast<uint8_t>(str[i]);
-                    lookup[c >> 6] |= (1ULL << (c & 63));
-                }
-                for(size_type i=tape_size; i > 0; --i) {
-                    uint8_t c = static_cast<uint8_t>(ptr[i-1]);
-                    if (lookup[c >> 6] & (1ULL << (c & 63))) {
-                        return (ptr - data_) + i - 1;
+            while (pos >= tape_size - 1) {
+                const CharT* ptr = data_ + pos - (tape_size - 1);
+                uint64_t block{};
+                std::memcpy(&block, ptr, tape_size);
+                
+                if (str_len <= 8) {
+                    uint64_t match = 0;
+                    for(size_type i = 0; i < str_len; ++i) {
+                        uint64_t xored = block ^ tapes[i];
+                        match |= ((xored - lsb64) & ~xored & msb64);
+                    }
+                    if (match != 0) {
+                        unsigned shift = 63 - count_leading_zeros(match);
+                        return (ptr - data_) + (shift >> 3);
+                    }
+                } else {
+                    uint64_t lookup[4] = {0};
+                    for(size_type i=0; i<str_len; ++i) {
+                        uint8_t c = static_cast<uint8_t>(str[i]);
+                        lookup[c >> 6] |= (1ULL << (c & 63));
+                    }
+                    for(size_type i=tape_size; i > 0; --i) {
+                        uint8_t c = static_cast<uint8_t>(ptr[i-1]);
+                        if (lookup[c >> 6] & (1ULL << (c & 63))) {
+                            return (ptr - data_) + i - 1;
+                        }
                     }
                 }
+                pos -= tape_size;
             }
-            if (pos < tape_size) break;
-            pos -= tape_size;
         }
         
         for (size_type i = pos + 1; i > 0; --i) {
@@ -614,45 +619,43 @@ private:
         if (str_len == 0) return pos < length_ ? pos : length_ - 1;
         pos = pos < length_ ? pos : length_ - 1;
 
-        tape_type tapes[tape_size]{};
-        size_type tape_count = str_len < tape_size ? str_len : tape_size; 
-        for(size_type i=0; i<tape_count; ++i) tapes[i] = make_tape(str[i]);
+        if (!is_constant_eval_() && sizeof(CharT) == 1) {
+            tape_type tapes[tape_size]{};
+            size_type tape_count = str_len < tape_size ? str_len : tape_size; 
+            for(size_type i=0; i<tape_count; ++i) tapes[i] = make_tape(str[i]);
 
-        while (pos >= tape_size - 1) {
-            const CharT* ptr = data_ + pos - (tape_size - 1);
-            uint64_t block{};
-            std::memcpy(&block, ptr, tape_size);
-            
-            if (str_len <= 8) {
-                uint64_t match = 0;
-                for(size_type i = 0; i < str_len; ++i) {
-                    uint64_t xored = block ^ tapes[i];
-                    match |= ((xored - lsb64) & ~xored & msb64);
-                }
-                uint64_t not_match = ~match & msb64;
-                if (not_match != 0) {
-#if (__cplusplus >= 202002L)
-				unsigned shift = 63 - std::countr_zero(match);
-#else
-				unsigned shift = 63 - __builtin_clzll(match);
-#endif
-                    return (ptr - data_) + (shift >> 3);
-                }
-            } else {
-                uint64_t lookup[4] = {0};
-                for(size_type i=0; i<str_len; ++i) {
-                    uint8_t c = static_cast<uint8_t>(str[i]);
-                    lookup[c >> 6] |= (1ULL << (c & 63));
-                }
-                for(size_type i=tape_size; i > 0; --i) {
-                    uint8_t c = static_cast<uint8_t>(ptr[i-1]);
-                    if (!(lookup[c >> 6] & (1ULL << (c & 63)))) {
-                        return (ptr - data_) + i - 1;
+            while (pos >= tape_size - 1) {
+                const CharT* ptr = data_ + pos - (tape_size - 1);
+                uint64_t block{};
+                std::memcpy(&block, ptr, tape_size);
+                
+                if (str_len <= 8) {
+                    uint64_t match = 0;
+                    for(size_type i = 0; i < str_len; ++i) {
+                        uint64_t xored = block ^ tapes[i];
+                        match |= ((xored - lsb64) & ~xored & msb64);
+                    }
+                    uint64_t not_match = ~match & msb64;
+                    if (not_match != 0) {
+                        // BUG FIXED: Menggunakan not_match alih-alih match
+                        unsigned shift = 63 - count_leading_zeros(not_match);
+                        return (ptr - data_) + (shift >> 3);
+                    }
+                } else {
+                    uint64_t lookup[4] = {0};
+                    for(size_type i=0; i<str_len; ++i) {
+                        uint8_t c = static_cast<uint8_t>(str[i]);
+                        lookup[c >> 6] |= (1ULL << (c & 63));
+                    }
+                    for(size_type i=tape_size; i > 0; --i) {
+                        uint8_t c = static_cast<uint8_t>(ptr[i-1]);
+                        if (!(lookup[c >> 6] & (1ULL << (c & 63)))) {
+                            return (ptr - data_) + i - 1;
+                        }
                     }
                 }
+                pos -= tape_size;
             }
-            if (pos < tape_size) break;
-            pos -= tape_size;
         }
         
         for (size_type i = pos + 1; i > 0; --i) {
